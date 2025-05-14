@@ -1,27 +1,38 @@
 import React, { useState } from 'react';
-import { View, Image, Text, TouchableOpacity, Alert } from 'react-native';
+import { ScrollView, View, Image, Text, TouchableOpacity, Alert } from 'react-native';
 import { Feather } from '@expo/vector-icons';
-import CustomInput from '../../components/custom-input/index.js';
-import CustomButton from '../../components/custom-button/index.js';
+import CustomInput from '../../components/custom-input';
+import CustomButton from '../../components/custom-button';
+import AlertBox from '../../components/alert-box';
+import LoadingModal from '../../components/loader';
 import { style } from './style.js';
 import { post } from '../../services/api.js';
 
-export default function RegisterConfirm({ navigation }) {
+export default function RegisterConfirmScreen({ navigation, route }) {
+  const { token, email } = route.params || {};
   const [password, setPassword] = useState('');
   const [passwordConfirmation, setPasswordConfirmation] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async () => {
+    const endpoint = `new-account/${token}`;
+    setLoading(true);
     try {
-      const data = await post({ password, passwordConfirmation });
-      await login(data.token);
-      Alert.alert("Login realizado com sucesso!");
+      const data = await post(endpoint, { email, password, passwordConfirmation });
+      navigation.navigate("Login", { successMessage: "Cadastro realizado com sucesso!" });
     } catch (error) {
-      Alert.alert("Erro", "Falha ao realizar login.");
+      setError("Falha ao finalizar cadastro. Tente novamente.");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <View style={style.container}>
+    <ScrollView 
+      style={style.container}
+      contentContainerStyle={style.scrollView}
+    >
       <Image 
         source={require('../../../assets/logo.png')} 
         style={style.logo}
@@ -29,6 +40,14 @@ export default function RegisterConfirm({ navigation }) {
       />
 
       <Text style={style.title}>SETA</Text>
+
+      {error !== '' && (
+        <AlertBox 
+          message={error}
+          type="error"
+          onClose={() => setError('')}
+        />
+      )}
 
       <Feather 
         name="user-check" 
@@ -68,12 +87,7 @@ export default function RegisterConfirm({ navigation }) {
         />
       </View>
 
-      <TouchableOpacity
-        style={{ marginTop: 20, padding: 10, backgroundColor: '#ccc', borderRadius: 5 }}
-        onPress={() => navigation.navigate("Home")}
-      >
-        <Text style={{ textAlign: 'center' }}>Ir para Home (teste)</Text>
-      </TouchableOpacity>
-    </View>
+      <LoadingModal show={loading} />
+    </ScrollView>
   );
 }

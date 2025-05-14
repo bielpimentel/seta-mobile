@@ -35,5 +35,7 @@ const style = StyleSheet.create({
     borderRadius: 12,
     paddingHorizontal: 12,
     paddingVertical: 10,
+    color: '#0aaa4a',
+    fontFamily: 'Kanit_300Light',
   },
 });

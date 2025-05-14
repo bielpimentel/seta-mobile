@@ -2,11 +2,13 @@ import { StyleSheet } from 'react-native';
 
 const style = StyleSheet.create({
   container: {
-    flex: 1,
     backgroundColor: '#fcfff7',
-    padding: 50,
+  },
+  scrollView: {
+    flexGrow: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    padding: 50,
   },
   logo: {
     width: 120,

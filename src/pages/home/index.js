@@ -1,31 +1,53 @@
-import React from "react";
-import { View, Text, Image, TouchableOpacity } from "react-native";
-import { useAuth } from "../../contexts/auth";
+import React, { useState, useEffect } from "react";
+import { View, Text, ScrollView, FlatList } from 'react-native';
+import Header from '../../components/header';
+import AccessCard from '../../components/access-card';
+import NavigationCard from '../../components/navigation-card';
+import { authGet } from "../../services/api.js";
+import { style } from "./style.js";
 
-// import { style } from "./style.js";
+export default function HomeScreen({ navigation }) {
+  const [user, setUser] = useState({name: '---', email: '---'});
 
-export default function Home() {
-  const { logout } = useAuth();
+  const getUser = async () => {
+    try {
+      const response = await authGet("users");
+      setUser(response);
+    } catch (error) {
+      console.error("Erro ao buscar usuário:", error);
+    }
+  }
 
-  const handleLogout = () => {
-    logout();
-  };
+  useEffect(() => {
+    getUser();
+  }, []);
+
+  const navigationItems = [
+    { title: 'Meu perfil', icon: 'user', onPress: () => console.log('Acessar perfil') },
+    { title: 'Configurações', icon: 'settings', onPress: () => console.log('Acessar configurações') },
+    { title: 'Suporte', icon: 'message-square', onPress: () => console.log('Acessar suporte') },
+  ];
 
   return (
-    <View>
-      <Image
-        source={require("../../../assets/logo.png")}
-        style={{ width: 100, height: 100 }}
-        resizeMode="contain"
-      />
-      <Text>Home</Text>
+    <View style={style.container}>
+      <Header title="HOME" />
 
-      <TouchableOpacity
-        style={{ marginTop: 20, padding: 10, backgroundColor: "red", borderRadius: 5 }}
-        onPress={handleLogout}
-      >
-        <Text>Logout</Text>
-      </TouchableOpacity>
+      <ScrollView contentContainerStyle={style.scrollView}>
+        <Text style={style.sectionTitle}>Cartão de acesso</Text>
+        <AccessCard user={user} onShowQRCode={() => navigation.navigate("QRCode")} />
+
+        <Text style={style.sectionTitle}>Navegação</Text>
+        <FlatList
+          data={navigationItems}
+          numColumns={2}
+          keyExtractor={(item) => item.title}
+          renderItem={({ item }) => (
+            <NavigationCard title={item.title} icon={item.icon} onPress={item.onPress} />
+          )}
+          columnWrapperStyle={{ justifyContent: 'space-between' }}
+          showsVerticalScrollIndicator={false}
+        />
+      </ScrollView>
     </View>
   );
 }

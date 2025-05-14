@@ -1,30 +1,41 @@
 import React, { useState } from 'react';
-import { View, Image, Text, TouchableOpacity, Alert } from 'react-native';
+import { ScrollView, View, Image, Text, TouchableOpacity } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import CustomInput from '../../components/custom-input';
 import CustomButton from '../../components/custom-button';
+import AlertBox from '../../components/alert-box';
+import LoadingModal from '../../components/loader';
 import { style } from './style.js';
 import { post } from '../../services/api';
 import { useAuth } from '../../contexts/auth.js';
 
-export default function Login({ navigation }) {
+export default function LoginScreen({ navigation, route }) {
+  const { successMessage } = route.params || {};
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const { login } = useAuth();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
   const handleLogin = async () => {
     const endpoint = "login";
+    setLoading(true);
     try {
       const data = await post(endpoint, { email, password });
       await login(data.token);
-      Alert.alert("Login realizado com sucesso!");
     } catch (error) {
-      Alert.alert("Erro", "Falha ao realizar login.");
+      setError("Falha ao realizar login. Verifique suas credenciais.");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <View style={style.container}>
+    <ScrollView 
+      style={style.container}
+      contentContainerStyle={style.scrollView}
+      showsVerticalScrollIndicator={false}
+    >
       <Image 
         source={require('../../../assets/logo.png')} 
         style={style.logo}
@@ -32,6 +43,22 @@ export default function Login({ navigation }) {
       />
 
       <Text style={style.title}>SETA</Text>
+
+      {successMessage && (
+        <AlertBox 
+          message={successMessage}
+          type="success"
+          onClose={() => navigation.setParams({ successMessage: null })}
+        />
+      )}
+
+      {error !== '' && (
+        <AlertBox 
+          message={error}
+          type="error"
+          onClose={() => setError('')}
+        />
+      )}
 
       <Feather 
         name="log-in" 
@@ -72,12 +99,7 @@ export default function Login({ navigation }) {
         action={() => navigation.navigate("Register")}
       />
 
-      <TouchableOpacity
-        style={{ marginTop: 20, padding: 10, backgroundColor: '#ccc', borderRadius: 5 }}
-        onPress={() => navigation.navigate("RegisterConfirm")}
-      >
-        <Text style={{ textAlign: 'center' }}>Ir para confirmação de senha (teste)</Text>
-      </TouchableOpacity>
-    </View>
+      <LoadingModal show={loading} />
+    </ScrollView>
   );
 }

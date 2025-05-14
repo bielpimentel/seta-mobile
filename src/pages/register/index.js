@@ -1,13 +1,38 @@
-import React from 'react';
-import { View, Image, Text, TouchableOpacity } from 'react-native';
+import React, { useState } from 'react';
+import { ScrollView, View, Image, Text, TouchableOpacity } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import CustomInput from '../../components/custom-input';
 import CustomButton from '../../components/custom-button';
+import AlertBox from '../../components/alert-box';
+import LoadingModal from '../../components/loader';
 import { style } from './style.js';
+import { post } from '../../services/api.js';
 
-export default function Register({ navigation }) {
+export default function RegisterScreen({ navigation }) {
+  const [email, setEmail] = useState('');
+  const [name, setName] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async () => {
+    const endpoint = `new-account`;
+    setLoading(true);
+    try {
+      const data = await post(endpoint, { email, name });
+      const msg = "Em breve você receberá um e-mail para finalizar seu cadastro. Cheque também a caixa de spam.";
+      navigation.navigate("Login", { successMessage: msg });
+    } catch (error) {
+      setError("Falha ao realizar cadastro. Verifique os dados e tente novamente.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
-    <View style={style.container}>
+    <ScrollView 
+      style={style.container}
+      contentContainerStyle={style.scrollView}
+    >
       <Image 
         source={require('../../../assets/logo.png')} 
         style={style.logo}
@@ -15,6 +40,14 @@ export default function Register({ navigation }) {
       />
 
       <Text style={style.title}>SETA</Text>
+
+      {error !== '' && (
+        <AlertBox 
+          message={error}
+          type="error"
+          onClose={() => setError('')}
+        />
+      )}
 
       <Feather 
         name="user-plus" 
@@ -27,18 +60,22 @@ export default function Register({ navigation }) {
       <CustomInput 
         placeholder="Digite seu nome completo"
         label="Nome completo"
+        value={name}
+        onChangeText={setName}
       />
 
       <CustomInput 
         placeholder="Digite seu e-mail"
         label="E-mail institucional"
+        value={email}
+        onChangeText={setEmail}
       />
 
       <View style={style.div}>
         <CustomButton 
           title="CONFIRMAR"
           isMain={true}
-          action={() => console.log('Registrado!')}
+          action={handleSubmit}
         />
 
         <CustomButton 
@@ -48,12 +85,7 @@ export default function Register({ navigation }) {
         />
       </View>
 
-      <TouchableOpacity
-        style={{ marginTop: 20, padding: 10, backgroundColor: '#ccc', borderRadius: 5 }}
-        onPress={() => navigation.navigate("RegisterConfirm")}
-      >
-        <Text style={{ textAlign: 'center' }}>Ir para confirmação (teste)</Text>
-      </TouchableOpacity>
-    </View>
+      <LoadingModal show={loading} />
+    </ScrollView>
   );
 }
