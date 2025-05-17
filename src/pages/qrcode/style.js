@@ -19,8 +19,12 @@ const style = StyleSheet.create({
     marginTop: 16,
     marginBottom: 12,
   },
+  refreshButton: {
+    marginBottom: 10,
+    alignItems: 'center',
+  },
   email: {
-    marginBottom: 56,
+    marginBottom: 64,
     fontFamily: 'Kanit_300Light',
     fontSize: 16,
     color: '#008435',
