@@ -8,10 +8,11 @@ import AppNavigator from './src/routes';
 import { AuthProvider } from './src/contexts/auth';
 
 const linking = {
+  // prefixes: [Linking.createURL('/')],
   prefixes: ['seta://'],
   config: {
     screens: {
-      RegisterConfirmScreen: 'register-confirm/:token/:email',
+      RegisterConfirm: 'register-confirm/:token/:email',
     },
   },
 };
